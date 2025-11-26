@@ -61,21 +61,53 @@ int main() {
 	// PowerUp Setup ()
 	vector<Butterfly> butterflyContainer;
 
+	// WALLS TO COLLIDE WITH
 	vector <Rectangle> walls;
-	walls.push_back({ 576, 612, 147, 120 });
-	walls.push_back({ 318, 135, 147, 120 });
+	walls.push_back({ 76, 84, 220, 159 });
+	walls.push_back({ 69, 235, 153, 72 });
+	walls.push_back({ 320, 92, 42, 40 });
+	walls.push_back({ 492, 565, 232, 150 });
+	walls.push_back({ 532, 476, 43, 39 });
+	walls.push_back({ 589, 503, 137, 60 });
+	walls.push_back({ 222, 610, 47, 42 });
+	walls.push_back({ 276, 575, 81, 51 });
+	walls.push_back({ 313, 597, 86, 67 });
+	walls.push_back({ 145, 386, 33, 158 });
+	walls.push_back({ 181, 410, 48, 115 });
+	walls.push_back({ 656, 430, 32, 37 });
+	walls.push_back({ 571, 290, 55, 92 });
+	walls.push_back({ 608, 254, 44, 193 });
+	walls.push_back({ 383, 191, 84, 35 });
+	walls.push_back({ 403, 140, 95, 57 });
+	walls.push_back({ 460, 126, 28, 29 });
+	walls.push_back({ 484, 166, 47, 56 });
+	walls.push_back({ 534, 149, 40, 40 });
 
-	InitWindow(screenWidth, screenHeight, "BestGameEver");
+	Vector2 circleCenter = { halfScreenWidth, halfScreenHeight };
+	float circleRadius = 60.f;
+
+	InitWindow(screenWidth, screenHeight, "Froggi");
+	InitAudioDevice();
 	SetTargetFPS(60);
-	// Load TEXTURES
+
+	// Load Textures, Music and Sound
 	LoadTextures();
-	player.Load("assets/frog.png", "assets/lives.png");
+	player.Load("assets/frog.png", "assets/lives.png","assets/tongue.png");
 	bee1.Load("assets/beeAlive.png", "assets/beeDead.png");
 	bee2.Load("assets/beeAlive.png", "assets/beeDead.png");
 	Texture2D butterflyTexture = LoadTexture("assets/butterfly.png");
 	Texture2D flyTexture = LoadTexture("assets/fly.png");
+	Music music = LoadMusicStream("assets/music_background.mp3");
+	Sound pacman = LoadSound("assets/music_gameOver.mp3");
+	Sound beeKill = LoadSound("assets/music_beeKill.mp3");
+	Sound beeDie = LoadSound("assets/music_beeDie.mp3");
+	PlayMusicStream(music);
+	music.looping = true;
 
 	while (!WindowShouldClose()) {
+
+		UpdateMusicStream(music);
+
 		float deltaTime = GetFrameTime();
 		bee1.searchTimer = GetFrameTime();
 		bee2.searchTimer = GetFrameTime();
@@ -110,7 +142,6 @@ int main() {
 		case Main:
 
 			DrawTexture(backgroundMainMenu, 0, 0, WHITE);
-			DrawText("PRESS SPACE TO START", 210, 400, 30, WHITE);
 
 			if (IsKeyDown(KEY_SPACE)) {
 				actualScreen = Level;
@@ -121,16 +152,25 @@ int main() {
 			break;
 		case Play:
 
-			DrawTexture(backgroundPlay, 0, 0, WHITE);
-
-			//PRUEBAAAAA OBSTACULOS COLISION
-			for (const auto& wall : walls) {
-				DrawRectangleRec(wall, DARKGRAY);
-			}
+			DrawTexturePro(backgroundPlay, { 0, 0, (float)backgroundPlay.width, (float)backgroundPlay.height }, { 0, 0, (float)screenWidth, (float)screenHeight }, { 0, 0 }, 0.f, WHITE);
 
 			// Player Update
+			player.previousPosition;
+
 			player.Controller();
 			player.Tongue(deltaTime);
+
+			Rectangle playerRect = player.GetBounds();
+			for (const auto& wall : walls) {
+				if (CheckCollisionRecs(playerRect, wall)) {
+					player.position = player.previousPosition;
+					break;
+				}
+			}
+
+			if (CheckCollisionCircles({ player.position.x, player.position.y }, player.size, circleCenter, circleRadius)) {
+				player.position = player.previousPosition;
+			}
 			player.ScreenLimits(screenWidth, screenHeight);
 			player.Draw();
 
@@ -233,9 +273,9 @@ int main() {
 				break;
 			}
 
-			DrawText(TextFormat("LEVEL %i", nextLevel), halfScreenWidth - 30, halfScreenHeight, 50, WHITE);
-			DrawText(TextFormat("EAT %i FLIES", fliesToWin), halfScreenWidth - 30, halfScreenHeight + 50, 20, WHITE);
-			DrawText(TextFormat("Lives left %i", player.lives), halfScreenWidth - 30, halfScreenHeight + 70, 20, WHITE);
+			DrawText(TextFormat("LEVEL %i", nextLevel), 280, 210, 50, WHITE);
+			DrawText(TextFormat("EAT %i FLIES", fliesToWin), 275, 380, 50, WHITE);
+			DrawText(TextFormat("Lives left %i", player.lives), 330, 500, 20, WHITE);
 
 			// show level screen for 2 seconds
 			levelScreenTimer -= deltaTime;
@@ -274,11 +314,7 @@ int main() {
 
 			DrawTexture(backgroundGameOver, 0, 0, WHITE);
 
-			DrawText("GAME OVER", 210, 260, 60, WHITE);
-
-			DrawText(TextFormat("SCORE %i", (int)player.score), 210, 360, 20, WHITE);
-
-			DrawText("PRESS SPACE TO RESTART", 200, 420, 30, WHITE);
+			DrawText(TextFormat("SCORE %i", (int)player.score), 350, 360, 20, WHITE);
 
 			if (IsKeyPressed(KEY_SPACE)) {
 				// reset all variables
@@ -309,8 +345,16 @@ int main() {
 		EndDrawing();
 	}
 
-	UnloadTextures();
+	// Unload and close resources
 
+	UnloadTextures();
+	UnloadMusicStream(music);
+
+	UnloadSound(pacman);
+	UnloadSound(beeDie);
+	UnloadSound(beeKill);
+
+	CloseAudioDevice();
 	CloseWindow();
 	return 0;
 }

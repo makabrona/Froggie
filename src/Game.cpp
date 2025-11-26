@@ -20,7 +20,7 @@ Texture2D backgroundGameOver;
 
 void LoadTextures() {
 	backgroundMainMenu = LoadTexture("assets/background_mainmenu.png");
-	backgroundPlay = LoadTexture("assets/background_blueprint.png");
+	backgroundPlay = LoadTexture("assets/background_play.png");
 	backgroundLevelScreen = LoadTexture("assets/background_newlevel.png");
 	backgroundGameOver = LoadTexture("assets/background_gameover.png");
 }

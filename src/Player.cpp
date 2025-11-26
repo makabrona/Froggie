@@ -1,9 +1,10 @@
 #include "Player.h"
 #include "game.h"
 
-void Player::Load(const char* inTexture, const char* inLives) {
+void Player::Load(const char* inTexture, const char* inLives, const char* inTongue) {
 		texture = LoadTexture(inTexture);
 		livesTexture = LoadTexture(inLives);
+		tongueTexture = LoadTexture(inTongue);
 }
 
 void Player::Controller() {
@@ -29,7 +30,12 @@ void Player::Controller() {
 
 	offsetPosition = offsetPosition.NormalizeVector();
 
-	position = position.SetVectorOffset(offsetPosition.ScaleVector(speed * GetFrameTime()));
+	previousPosition = position;
+
+	Vector2d newPos = position;
+	newPos = newPos.SetVectorOffset(offsetPosition.ScaleVector(speed * GetFrameTime()));
+
+	position = newPos;
 }
 
 void Player::Tongue(float deltaTime) {
@@ -85,6 +91,21 @@ void Player::ScreenLimits(int screenWidth, int screenHeight) {
 
 void Player::Draw() {
 
+
+	if (isTongueOut) {
+
+		float angle = atan2(tongueDirection.y, tongueDirection.x) * (180.f / PI);
+
+		Rectangle source = { 0, 0, (float)tongueTexture.width, (float)tongueTexture.height };
+
+		Rectangle dest = { position.x, position.y, tongueCurrentLength, tongueWidth };
+
+		Vector2 origin = { 0, tongueWidth / 2.f };
+
+		DrawTexturePro(tongueTexture, source, dest, origin, angle, WHITE);
+
+	}
+
 	if (texture.id != 0) {
 
 		Rectangle source = { 0, 0, (float)texture.width, (float)texture.height };
@@ -99,7 +120,12 @@ void Player::Draw() {
 		DrawCircle(position.x, position.y, size, RAYWHITE);
 	}
 
-	if (isTongueOut) {
-		DrawLineEx(Vector2{ position.x, position.y }, Vector2{ tongueEnd.x, tongueEnd.y }, 8.f, PINK);
-	}
+}
+
+Rectangle Player::GetBounds() const {
+
+	float texWidth = (float)texture.width;
+	float texHeight = (float)texture.height;
+
+	return Rectangle{ position.x - texWidth / 2.f, position.y - texHeight / 2.f, texWidth, texHeight };
 }

@@ -58,7 +58,7 @@ void Bee::Update(Player& player, float deltaTime) {
 			{
 
 				Vector2d toPlayer = position.VectorTowardsTarget(player.position);
-				Vector2d toPlayerDirection = toPlayer.NormalizeVector(); // normalize
+				Vector2d toPlayerDirection = toPlayer.NormalizeVector();
 
 				if (toPlayerDirection.x != 0.f || toPlayerDirection.y != 0.f) {
 					rotationAngle = atan2f(toPlayerDirection.y, toPlayerDirection.x) * (180.f / PI) + 90.f;
@@ -163,7 +163,6 @@ void Bee::Update(Player& player, float deltaTime) {
 			float distanceToTongue = position.DistanceToTarget(player.tongueEnd);
 
 			if (distanceToPlayer < size + player.size || distanceToTongue < size + 5.f) {
-
 				actualState = Dead;
 
 				pointsGained = 200;
