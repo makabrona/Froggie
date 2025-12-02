@@ -83,7 +83,7 @@ void Bee::Update(Player& player, float deltaTime) {
 					isDetected = false;
 				}
 
-				//detected ai behavior
+				//detect behavior
 				if (isDetected) {
 					//chase player
 					lastSeenPosition = player.position;
@@ -101,7 +101,7 @@ void Bee::Update(Player& player, float deltaTime) {
 
 					if (distanceToPlayer > detectionRange && angleToPlayer > fovAngle) {
 						isSearching = true;
-						position = position.SetVectorOffset(lastSeenPosition.ScaleVector(speed * GetFrameTime())); // nosesiestabien
+						position = position.SetVectorOffset(lastSeenPosition.ScaleVector(speed * GetFrameTime()));
 						if (searchTimer > 3.f) {
 							isSearching = false;
 						}
@@ -176,8 +176,9 @@ void Bee::Update(Player& player, float deltaTime) {
 
 		if (actualState == Dead) {
 
-			// change skin to dead bee (angel + transparency)
+			// change skin to dead bee
 			isDead = true;
+
 			// Fly back to the respawn point
 			float deadSpeed = 60.f;
 

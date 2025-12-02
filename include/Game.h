@@ -18,4 +18,5 @@ extern Texture2D backgroundLevelScreen;
 extern Texture2D backgroundGameOver;
 
 void LoadTextures();
+
 void UnloadTextures();

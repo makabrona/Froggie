@@ -27,41 +27,38 @@ int main() {
 	float levelScreenTimer = 0.f;
 	int fliesToWin;
 
+	/*** SETUP ***/
 
-
-	// Player Setup
+	// PLAYER:
 	Player player;
 	player.position = { 400, 700 };
-	
 
-	// Collectable Setup
+	// COLLECTABLE:
 	int amountOfFlies = 3;
 	vector<Fly>  flyContainer(amountOfFlies);
-
 	for (Fly& fly : flyContainer) {
 		fly.Respawn(screenWidth, screenHeight);
 	}
 
-	// Enemy Setup
+	// ENEMIES:
 	Vector2d beeStartPosition = { halfScreenWidth, halfScreenHeight };
-	// Level 1
+	// BEE TYPE 1:
 	Bee bee1;
 	bee1.type = 1;
 	bee1.startPosition = beeStartPosition;
 	bee1.spawnDelay = 1.f;
 	bee1.Respawn();
-
-	// Level 2
+	// BEE TYPE 2:
 	Bee bee2;
 	bee2.type = 2;
 	bee2.startPosition = beeStartPosition;
 	bee2.spawnDelay = 2.f;
 	bee2.Respawn();
 
-	// PowerUp Setup ()
+	// POWERUP:
 	vector<Butterfly> butterflyContainer;
 
-	// WALLS TO COLLIDE WITH
+	// Map: Walls to collide with
 	vector <Rectangle> walls;
 	walls.push_back({ 76, 84, 220, 159 });
 	walls.push_back({ 69, 235, 153, 72 });
@@ -82,7 +79,7 @@ int main() {
 	walls.push_back({ 460, 126, 28, 29 });
 	walls.push_back({ 484, 166, 47, 56 });
 	walls.push_back({ 534, 149, 40, 40 });
-
+	// Circle for the beehive
 	Vector2 circleCenter = { halfScreenWidth, halfScreenHeight };
 	float circleRadius = 60.f;
 
@@ -104,17 +101,19 @@ int main() {
 	PlayMusicStream(music);
 	music.looping = true;
 
+
+	/* ---- MAIN LOOP ---- */
 	while (!WindowShouldClose()) {
 
 		UpdateMusicStream(music);
 
 		float deltaTime = GetFrameTime();
-		bee1.searchTimer = GetFrameTime();
-		bee2.searchTimer = GetFrameTime();
+		bee1.searchTimer, bee2.searchTimer = GetFrameTime();
 
 		BeginDrawing();
 		ClearBackground(BLACK);
 
+		// Conditions for levelling up
 		if (currentLevel != previousLevel) {
 			switch (currentLevel) {
 			case 1:
@@ -138,6 +137,7 @@ int main() {
 			previousLevel = currentLevel;
 		}
 
+		// Screens of the Game:
 		switch (actualScreen) {
 		case Main:
 
@@ -154,12 +154,12 @@ int main() {
 
 			DrawTexturePro(backgroundPlay, { 0, 0, (float)backgroundPlay.width, (float)backgroundPlay.height }, { 0, 0, (float)screenWidth, (float)screenHeight }, { 0, 0 }, 0.f, WHITE);
 
-			// Player Update
+			// UPDATE PLAYER:
 			player.previousPosition;
-
 			player.Controller();
 			player.Tongue(deltaTime);
 
+			// collisions of player and walls
 			Rectangle playerRect = player.GetBounds();
 			for (const auto& wall : walls) {
 				if (CheckCollisionRecs(playerRect, wall)) {
@@ -174,7 +174,7 @@ int main() {
 			player.ScreenLimits(screenWidth, screenHeight);
 			player.Draw();
 
-			// Flies Update
+			// UPDATE FLIES:
 			for (Fly& fly : flyContainer) {
 				fly.texture = flyTexture;
 				fly.Update(player);
@@ -185,7 +185,7 @@ int main() {
 				}
 			}
 
-			//// Butterfly Update
+			// UPDATE BUTTERFLIES:
 
 			for (Butterfly& butterfly : butterflyContainer) {
 				if (butterfly.Update(player)) {
@@ -201,7 +201,7 @@ int main() {
 				butterfly.Draw();
 			}
 
-			// Bees Update
+			// UPDATE BEES:
 			if (currentLevel >= 1) {
 				bee2.Update(player, deltaTime);
 				bee2.Draw();
@@ -211,13 +211,13 @@ int main() {
 				bee1.Draw();
 			}
 
-			// Level Update
+			// UPDATE LEVEL:
 
 			if (player.fliesEaten >= fliesToWin && actualScreen != Level) {
 
 				if (currentLevel < 3) {
 					nextLevel = currentLevel + 1;
-					levelScreenTimer = 2.f; // show level screen for 3 seconds
+					levelScreenTimer = 2.f;										// Level screen shows for 2 seconds
 					player.fliesEaten = 0;
 					actualScreen = Level;
 				}
@@ -226,7 +226,7 @@ int main() {
 				}
 			}
 
-			// Show points gained when eat something
+			// Show points gained when eating something
 
 			if (drawPointsGained) {
 				pointsGainedTimer -= deltaTime;
@@ -239,16 +239,11 @@ int main() {
 				DrawText(TextFormat("+%i", pointsGained), (int)pointsPosition.x, (int)pointsPosition.y, 20, YELLOW);
 			}
 
-			// Show Level
+			// HUD: Level, flies, highscore, lives
 			DrawText(TextFormat("LEVEL %i", currentLevel), halfScreenWidth - 30, 10, 20, WHITE);
-
-			// Show Flies Eaten
 			DrawText(TextFormat("Flies eaten: %i", player.fliesEaten), 10, 10, 20, YELLOW);
-
-			// Show Highscore
 			DrawText(TextFormat("%i", player.score), 700, 10, 20, YELLOW);
 
-			// Show Lives
 			for (int i = 0; i < player.lives; i++) {
 				DrawTexture(player.livesTexture, 30 + i * 40 - player.livesTexture.width /2, 50 - player.livesTexture.height / 2, WHITE);
 			}
@@ -256,10 +251,8 @@ int main() {
 			break;
 
 		case Level:
-
-			// Show this screen when level up
+			// This screen shows when levelling up:
 			DrawTexture(backgroundLevelScreen, 0, 0, WHITE);
-
 
 			switch (nextLevel) {
 			case 1:
@@ -277,13 +270,13 @@ int main() {
 			DrawText(TextFormat("EAT %i FLIES", fliesToWin), 275, 380, 50, WHITE);
 			DrawText(TextFormat("Lives left %i", player.lives), 330, 500, 20, WHITE);
 
-			// show level screen for 2 seconds
 			levelScreenTimer -= deltaTime;
 			if (levelScreenTimer <= 0.f) {
 				currentLevel = nextLevel;
 				player.fliesEaten = 0;
 				actualScreen = Play;
 
+				// Define number of butterflies per level
 				butterflyContainer.clear();
 				int numButterflies = 0;
 
@@ -317,7 +310,7 @@ int main() {
 			DrawText(TextFormat("SCORE %i", (int)player.score), 350, 360, 20, WHITE);
 
 			if (IsKeyPressed(KEY_SPACE)) {
-				// reset all variables
+				/* RESET ALL: Variables, Bees, Flies and Butterflies */
 				actualScreen = Play;
 				currentLevel = 1;
 				nextLevel = 1;
@@ -326,10 +319,10 @@ int main() {
 				player.fliesEaten = 0;
 				player.score = 0;
 				player.lives = 3;
-				// reset bees:
+			
 				bee1.Respawn();
 				bee2.Respawn();
-				//reset flies and butterflies
+
 				for (Fly& fly : flyContainer) {
 				
 					fly.Respawn(screenWidth, screenHeight);
@@ -345,7 +338,7 @@ int main() {
 		EndDrawing();
 	}
 
-	// Unload and close resources
+	// Unload and Close
 
 	UnloadTextures();
 	UnloadMusicStream(music);
